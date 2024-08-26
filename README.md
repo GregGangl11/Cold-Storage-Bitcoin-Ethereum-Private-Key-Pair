@@ -3,6 +3,9 @@ Bitcoin Wallets using 12 word mnemonic do not offer sufficient entropy
 We are generating a random hex string offline for private keys that offers full entropy and safety 
 
 Versions Available in Releases 
+
 win-x86
+
 win-x64
+
 osx-x64
