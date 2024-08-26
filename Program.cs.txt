@@ -1,0 +1,96 @@
+using System;
+using System.Security.Cryptography;
+using System.Text;
+using NBitcoin;
+using Nethereum.Signer;
+using Nethereum.Hex.HexConvertors.Extensions;
+
+namespace KeyGenerator
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Select an option:");
+            Console.WriteLine("1. Generate Bitcoin Public/Private Key");
+            Console.WriteLine("2. Generate Ethereum Public/Private Key");
+
+            var choice = Console.ReadLine();
+            if (choice != "1" && choice != "2")
+            {
+                Console.WriteLine("Invalid choice. Exiting...");
+                return;
+            }
+
+            string privateKey = GeneratePrivateKey();
+
+            if (choice == "1")
+            {
+                // Generate Bitcoin key pair
+                var bitcoinKeys = GenerateBitcoinKeyPair(privateKey);
+                Console.WriteLine("Bitcoin Key Pair:");
+                Console.WriteLine($"Private Key: {bitcoinKeys.PrivateKey}");
+                Console.WriteLine($"Public Key (WIF Format): {bitcoinKeys.DepositAddress}");
+                Console.WriteLine($"Please save the private key and public key once you click enter program will close no data will be stored!");
+                Console.ReadLine();
+            }
+            else
+            {
+                // Generate Ethereum key pair
+                var ethereumKeys = GenerateEthereumKeyPair(privateKey);
+                Console.WriteLine("Ethereum Key Pair:");
+                Console.WriteLine($"Private Key: {ethereumKeys.PrivateKey}");
+                Console.WriteLine($"Public Key: {ethereumKeys.PublicKey}");
+                Console.WriteLine($"Please save the private key and public key once you click enter program will close no data will be stored!");
+                Console.ReadLine();
+            }
+        }
+
+        static string GeneratePrivateKey()
+        {
+            //Create a unique Hex String
+            return RandomNumberGenerator.GetHexString(64, true);
+        }
+
+
+
+static (string PrivateKey, string PublicKey, string DepositAddress) GenerateBitcoinKeyPair(string privateKeyHex)
+    {
+
+            // Convert the hexadecimal string to a byte array
+            byte[] privateKeyBytes = privateKeyHex.HexToByteArray();
+
+            // Create a Key object from the byte array
+            var key = new Key(privateKeyBytes);
+
+            // Convert the Key to BitcoinSecret format
+            var bitcoinSecret = key.GetBitcoinSecret(Network.Main);
+
+            // Derive the public key from the BitcoinSecret
+            var publicKey = bitcoinSecret.PubKey;
+
+            // Create a Bitcoin Address from the public key
+            var depositAddress = publicKey.GetAddress(ScriptPubKeyType.Legacy, Network.Main);
+
+            // Return the private key in WIF format, the public key, and the deposit address
+            return (bitcoinSecret.ToWif(), publicKey.ToString(), depositAddress.ToString());
+       
+    }
+
+
+    static (string PrivateKey, string PublicKey) GenerateEthereumKeyPair(string privateKeyHex)
+        {
+            // Convert the hex string to byte array
+
+
+            // Create an Ethereum key object
+            var ethECKey = new EthECKey(privateKeyHex);
+
+            // Retrieve the public address and private key
+            var publicAddress = ethECKey.GetPublicAddress();
+            var privateKey = ethECKey.GetPrivateKey();
+
+            return (privateKey, publicAddress);
+        }
+    }
+}
